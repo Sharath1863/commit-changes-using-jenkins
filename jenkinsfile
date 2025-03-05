@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git url: 'https://github.com/your-username/commit-using-jenkins.git', branch: 'main'
+            }
+        }
+        stage('Create Multiple Commits') {
+            steps {
+                script {
+                    for (int i = 1; i <= 10; i++) {
+                        sh """
+                            echo "Commit ${i}" >> file.txt
+                            git add file.txt
+                            git commit -m "Commit ${i}"
+                        """
+                    }
+                }
+            }
+        }
+        stage('Push Changes') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'git-credentials-id', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    sh 'git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/your-username/commit-using-jenkins.git main'
+                }
+            }
+        }
+    }
+}
